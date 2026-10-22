@@ -213,7 +213,7 @@
 
     const grid = $('charts'); grid.innerHTML = '';
     (cfg.charts || []).forEach((c) => grid.append(frame(c.title || 'Chart', c.src, c.wide ? 'wide' : '')));
-    if (!(cfg.charts || []).length) grid.innerHTML = '<div class="frame empty wide">No analytics charts have been added yet.</div>';
+    if (!(cfg.charts || []).length) grid.innerHTML = '<div class="frame empty wide">Analytics are coming soon.</div>';
 
     checkinCfg = cfg.app || null;
     $('tab-checkin').hidden = !checkinCfg;
