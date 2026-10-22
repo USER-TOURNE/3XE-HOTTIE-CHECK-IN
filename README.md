@@ -15,3 +15,7 @@ A password-locked page where management staff can view the Hottie Check In Atten
 3. Commit and push the new `payload.js`.
 
 Changing the password and rebuilding locks out every saved device.
+
+## Analytics
+
+The Analytics tab is built from the Google Sheet that Clappia syncs check-ins into (Design App → Configuration → Google Sheets/Drive). The sheet is published as CSV and its link is stored encrypted in `payload.js` (`sheet.csv` in the local config). Published sheets refresh every few minutes, so analytics can lag Clappia slightly; the Check-in log tab is instant.

@@ -105,6 +105,31 @@
   .empty { padding: 48px 16px; text-align: center; color: var(--muted); }
   .stamp { font-size: 12px; color: var(--muted); font-weight: 400; }
   @media (max-width: 520px) { .live span.lbl { display: none; } }
+
+  /* ---------- analytics ---------- */
+  .a-body { padding: 14px; }
+  .kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (min-width: 700px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+  .kpi { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .kpi-n { font-size: 30px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .kpi-l { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .last { margin-top: 12px; font-size: 14px; }
+  .muted { color: var(--muted); }
+  .list { list-style: none; margin: 0; padding: 0; max-height: 260px; overflow: auto; }
+  .list li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .list li:last-child { border-bottom: 0; }
+  .a-empty { color: var(--muted); font-size: 14px; padding: 20px 4px; text-align: center; }
+  .chart { width: 100%; height: auto; display: block; }
+  .chart .bar { fill: color-mix(in srgb, var(--accent) 45%, transparent); }
+  .chart .bar.today { fill: var(--accent); }
+  .chart .bar-n { font-size: 11px; fill: var(--ink); text-anchor: middle; font-weight: 600; }
+  .chart .bar-l { font-size: 10px; fill: var(--muted); text-anchor: middle; }
+  #a-map { height: 360px; border-radius: 10px; overflow: hidden; z-index: 0; }
+  .hbar { display: grid; grid-template-columns: minmax(70px, 160px) 1fr 32px; gap: 10px; align-items: center; padding: 5px 0; font-size: 14px; }
+  .hbar-l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hbar-t { height: 10px; background: var(--bg); border-radius: 6px; overflow: hidden; }
+  .hbar-f { display: block; height: 100%; background: var(--accent); border-radius: 6px; }
+  .hbar-n { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -147,6 +172,7 @@
 </div>
 
 <script src="payload.js"></script>
+<script src="analytics.js"></script>
 <script>
 (() => {
   const KEY = 'checkin-board-key';
@@ -213,7 +239,8 @@
 
     const grid = $('charts'); grid.innerHTML = '';
     (cfg.charts || []).forEach((c) => grid.append(frame(c.title || 'Chart', c.src, c.wide ? 'wide' : '')));
-    if (!(cfg.charts || []).length) grid.innerHTML = '<div class="frame empty wide">Analytics are coming soon.</div>';
+    if (cfg.sheet && window.Analytics) window.Analytics.start(cfg.sheet.csv, grid);
+    else if (!(cfg.charts || []).length) grid.innerHTML = '<div class="frame empty wide">Analytics are coming soon.</div>';
 
     checkinCfg = cfg.app || null;
     $('tab-checkin').hidden = !checkinCfg;
@@ -236,6 +263,7 @@
     if (document.hidden) return;
     // Never reload the check-in form: it would wipe a half-filled submission
     document.querySelectorAll('#app iframe:not([data-no-refresh])').forEach(f => { const s = f.src; f.src = 'about:blank'; f.src = s; });
+    if (window.Analytics) window.Analytics.refresh();
     stamp();
   }
 
