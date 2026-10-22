@@ -97,7 +97,7 @@
   }
   .frame-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
   .frame iframe { display: block; width: 100%; border: 0; background: #fff; }
-  #view-log iframe { height: calc(100vh - 170px); min-height: 520px; }
+  #view-log iframe, #view-checkin iframe { height: calc(100vh - 170px); min-height: 520px; }
   .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
   @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } .grid .wide { grid-column: 1 / -1; } }
   .grid iframe { height: 420px; }
@@ -135,11 +135,13 @@
     <nav class="tabs" role="tablist">
       <button class="tab" role="tab" data-view="log" aria-selected="true">Check-in log</button>
       <button class="tab" role="tab" data-view="analytics" aria-selected="false">Analytics</button>
+      <button class="tab" role="tab" data-view="checkin" aria-selected="false" id="tab-checkin" hidden>Check in</button>
     </nav>
   </header>
   <main>
     <section class="view on" id="view-log"></section>
     <section class="view" id="view-analytics"><div class="grid" id="charts"></div></section>
+    <section class="view" id="view-checkin"></section>
   </main>
 </div>
 
@@ -174,7 +176,19 @@
   }
   const toB64 = (u8) => btoa(String.fromCharCode(...u8));
 
-  function frame(title, src, extraClass) {
+  let checkinCfg = null;
+  function loadCheckin() {
+    const v = $('view-checkin');
+    if (!checkinCfg || v.querySelector('iframe')) return;
+    v.innerHTML = '';
+    const w = frame(checkinCfg.title || 'Check in', checkinCfg.src, '', 'geolocation *; camera *; microphone *; fullscreen');
+    w.querySelector('iframe').dataset.noRefresh = '1';
+    w.querySelector('iframe').removeAttribute('loading');
+    w.querySelector('.stamp').classList.remove('stamp');
+    v.append(w);
+  }
+
+  function frame(title, src, extraClass, allow) {
     const wrap = document.createElement('div');
     wrap.className = 'frame' + (extraClass ? ' ' + extraClass : '');
     const head = document.createElement('div');
@@ -183,7 +197,7 @@
     head.firstChild.textContent = title;
     const f = document.createElement('iframe');
     f.src = src; f.loading = 'lazy'; f.referrerPolicy = 'no-referrer';
-    f.allow = 'fullscreen';
+    f.allow = allow || 'fullscreen';
     f.title = title;
     wrap.append(head, f);
     return wrap;
@@ -200,6 +214,10 @@
     (cfg.charts || []).forEach((c) => grid.append(frame(c.title || 'Chart', c.src, c.wide ? 'wide' : '')));
     if (!(cfg.charts || []).length) grid.innerHTML = '<div class="frame empty wide">No analytics charts have been added yet.</div>';
 
+    checkinCfg = cfg.app || null;
+    $('tab-checkin').hidden = !checkinCfg;
+    $('view-checkin').innerHTML = '';
+
     stamp();
     clearInterval(refreshTimer);
     const secs = Number(cfg.refreshSeconds) || 0;
@@ -215,7 +233,8 @@
   }
   function reloadAll() {
     if (document.hidden) return;
-    document.querySelectorAll('#app iframe').forEach(f => { const s = f.src; f.src = 'about:blank'; f.src = s; });
+    // Never reload the check-in form: it would wipe a half-filled submission
+    document.querySelectorAll('#app iframe:not([data-no-refresh])').forEach(f => { const s = f.src; f.src = 'about:blank'; f.src = s; });
     stamp();
   }
 
@@ -238,6 +257,7 @@
   document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === t));
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'view-' + t.dataset.view));
+    if (t.dataset.view === 'checkin') loadCheckin();
   }));
   $('refresh').addEventListener('click', reloadAll);
   $('logout').addEventListener('click', () => { store.clear(); location.reload(); });
