@@ -147,11 +147,11 @@ window.Analytics = (() => {
     try { await loadLeaflet(); } catch { el.outerHTML = '<div class="a-empty">The map couldn’t load.</div>'; return; }
     if (map) { map.remove(); map = null; }
     map = L.map(el, { scrollWheelZoom: false, attributionControl: true });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
     markerLayer = L.featureGroup().addTo(map);
-    const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#d6336c';
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--hot').trim() || '#ff3ea5';
     pts.forEach((r, i) => L.circleMarker([r.lat, r.lng], {
-      radius: i === 0 ? 9 : 7, color: '#fff', weight: 2, fillColor: accent, fillOpacity: i === 0 ? 1 : .75
+      radius: i === 0 ? 9 : 7, color: i === 0 ? '#00ffff' : '#fff', weight: 2, fillColor: accent, fillOpacity: i === 0 ? 1 : .75
     }).bindPopup(`<b>${esc(r.name)}</b><br>${fmtDay(r.at)} ${fmtTime(r.at)}`).addTo(markerLayer));
     map.fitBounds(markerLayer.getBounds().pad(0.3), { maxZoom: 16 });
   }
