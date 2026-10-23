@@ -98,6 +98,9 @@
   .foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; max-width: 1400px; width: 100%; margin: 0 auto;
     padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); font: 12px var(--mono); letter-spacing: .32em; text-transform: uppercase; }
   .foot b { color: var(--hot); font-weight: 400; }
+  .foot-link { color: var(--muted); text-decoration: none; letter-spacing: .2em; }
+  .foot-link:hover { color: var(--hot); }
+  @media (max-width: 560px) { .foot { flex-wrap: wrap; } .foot-link { order: 3; width: 100%; } }
 
   /* ---------- dashboard ---------- */
   #app { display: none; min-height: 100vh; flex-direction: column; }
@@ -245,7 +248,7 @@
     <section class="view" id="view-analytics"><div class="grid" id="charts"></div></section>
     <section class="view" id="view-checkin"></section>
   </main>
-  <div class="foot"><span>Welcome to the club</span><b>18+</b></div>
+  <div class="foot"><span>Welcome to the club</span><a class="foot-link" href="webhook.html">Discord alerts &rarr;</a><b>18+</b></div>
 </div>
 
 <!-- shared gradient for chart bars -->

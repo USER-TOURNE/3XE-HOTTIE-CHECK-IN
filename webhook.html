@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0b0709">
+<title>Discord Alerts Setup · Hotties</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0709'/%3E%3Cpath d='M8 8l16 16M24 8L8 24' stroke='%23ff3ea5' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0709; --panel: #140a11; --panel-2: #1c0e18; --ink: #f1ecf0; --muted: #a8939f;
+    --line: rgba(216, 65, 146, .28); --pink: #d84192; --hot: #ff3ea5; --violet: #7b45db; --cyan: #00ffff; --magenta: #ff00ff;
+    --display: "Archivo Black", "Arial Black", Impact, sans-serif;
+    --mono: "Space Mono", ui-monospace, Menlo, monospace;
+    --body: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    color: var(--ink); font: 15px/1.5 var(--body); -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(900px 520px at 50% -120px, rgba(216, 65, 146, .30), transparent 70%),
+      radial-gradient(rgba(216, 65, 146, .16) 1px, transparent 1.4px) 0 0 / 22px 22px, var(--bg);
+    background-attachment: fixed;
+  }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  a { color: var(--hot); }
+  .strip { background: var(--pink); color: #0b0709; overflow: hidden; white-space: nowrap; font: 11px/1 var(--display); letter-spacing: .3em; padding: 6px 0; user-select: none; }
+  .strip .run { display: inline-block; animation: run 38s linear infinite; }
+  .strip .x { font-family: var(--body); font-weight: 300; margin: 0 .9em; letter-spacing: 0; }
+  @keyframes run { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .strip .run { animation: none; } }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 22px 16px 40px; }
+  .top { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+  .top img { height: 34px; mix-blend-mode: screen; }
+  .top a.back { margin-left: auto; font: 700 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--ink);
+    border: 1px solid var(--hot); padding: 8px 11px; text-decoration: none; }
+  h1 { font: 34px/1 var(--display); text-transform: uppercase; margin: 0 0 8px; }
+  h1 span { color: var(--pink); }
+  .lede { color: var(--muted); margin: 0 0 22px; }
+  .card { position: relative; background: var(--panel); border: 1px solid var(--line); margin-bottom: 18px; }
+  .card::before, .card::after { content: ""; position: absolute; width: 18px; height: 18px; pointer-events: none; }
+  .card::before { top: -3px; left: -3px; border-top: 3px solid var(--hot); border-left: 3px solid var(--hot); }
+  .card::after { bottom: -3px; right: -3px; border-bottom: 3px solid var(--hot); border-right: 3px solid var(--hot); }
+  .card h2 { margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--line); font: 700 12px/1.3 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--hot); display: flex; gap: 10px; align-items: center; }
+  .card h2 .n { background: var(--hot); color: #0b0709; padding: 3px 7px; }
+  .body { padding: 16px; }
+  .help { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+  .help b { color: var(--ink); font-weight: 600; }
+  label.l { display: block; font: 700 10px/1.3 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+  input[type=text], input[type=url], textarea {
+    width: 100%; padding: 11px 12px; border: 1px solid var(--line); background: var(--bg); outline: none; border-radius: 0; font-size: 16px;
+  }
+  input:focus, textarea:focus { border-color: var(--hot); box-shadow: 0 0 0 3px rgba(255, 62, 165, .22); }
+  textarea { font: 12px/1.5 var(--mono); min-height: 220px; resize: vertical; white-space: pre; }
+  .row { display: grid; gap: 8px; grid-template-columns: 26px 1fr 1fr 38px; align-items: center; margin-bottom: 8px; }
+  .row input[type=checkbox], .opt input { accent-color: var(--hot); width: 18px; height: 18px; }
+  .x-btn { border: 1px solid var(--line); background: transparent; height: 42px; cursor: pointer; color: var(--muted); font-size: 18px; }
+  .x-btn:hover { border-color: var(--hot); color: var(--ink); }
+  .heads { display: grid; gap: 8px; grid-template-columns: 26px 1fr 1fr 38px; margin-bottom: 6px; font: 700 10px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .opts { display: grid; gap: 10px; grid-template-columns: 1fr; }
+  @media (min-width: 560px) { .opts { grid-template-columns: 1fr 1fr; } }
+  .opt { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+  .opt small { display: block; color: var(--muted); font-size: 12px; }
+  .btn {
+    border: 0; cursor: pointer; background: var(--pink); color: #0b0709; font: 14px/1 var(--display); letter-spacing: .12em;
+    text-transform: uppercase; padding: 13px 16px; transform: skewX(-8deg);
+  }
+  .btn > span { display: inline-block; transform: skewX(8deg); font-style: italic; }
+  .btn:hover { background: var(--hot); }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--hot); }
+  .btn.ghost:hover { background: var(--hot); color: #0b0709; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+  .out { display: flex; gap: 8px; }
+  .out input { font: 12px var(--mono); }
+  .copy { border: 1px solid var(--hot); background: transparent; cursor: pointer; padding: 0 12px; font: 700 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
+  .copy:hover, .copy.ok { background: var(--hot); color: #0b0709; }
+  .status { font: 13px var(--mono); margin-top: 12px; min-height: 20px; }
+  .status.ok { color: var(--cyan); } .status.bad { color: var(--hot); }
+  ol.steps { margin: 0; padding-left: 20px; } ol.steps li { margin: 0 0 10px; } ol.steps li::marker { color: var(--hot); font-family: var(--mono); font-weight: 700; }
+  code { font: 12px var(--mono); background: var(--bg); border: 1px solid var(--line); padding: 1px 5px; }
+  /* Discord-style preview */
+  .preview { background: #313338; color: #dbdee1; padding: 14px; font: 15px/1.375 "gg sans", "Noto Sans", Helvetica, Arial, sans-serif; border-radius: 6px; }
+  .pv-head { display: flex; gap: 10px; align-items: center; }
+  .pv-av { width: 40px; height: 40px; border-radius: 50%; background: #0b0709 url(assets/avatar.png) center/cover; flex: none; }
+  .pv-name { font-weight: 600; color: #f2f3f5; } .pv-bot { background: #5865f2; color: #fff; font-size: 10px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-left: 4px; vertical-align: 2px; }
+  .pv-content { margin: 2px 0 6px 50px; } .pv-ping { background: rgba(255, 62, 165, .22); color: #ffb3dc; border-radius: 3px; padding: 0 2px; font-weight: 500; }
+  .pv-embed { margin-left: 50px; background: #2b2d31; border-left: 4px solid #ff3ea5; border-radius: 4px; padding: 10px 14px 12px; max-width: 460px; }
+  .pv-title { font-weight: 600; color: #f2f3f5; margin-bottom: 8px; }
+  .pv-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pv-f b { display: block; font-size: 13px; color: #f2f3f5; } .pv-f span { font-size: 14px; } .pv-f.full { grid-column: 1 / -1; } .pv-f a { color: #00a8fc; text-decoration: none; }
+  .pv-foot { font-size: 12px; color: #b5bac1; margin-top: 8px; }
+  .foot { display: flex; justify-content: space-between; max-width: 760px; margin: 0 auto; padding: 14px 16px 28px; font: 12px var(--mono); letter-spacing: .32em; text-transform: uppercase; }
+  .foot b { color: var(--hot); font-weight: 400; }
+  details summary { cursor: pointer; font: 700 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  details[open] summary { margin-bottom: 12px; }
+  .vars { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+</style>
+</head>
+<body>
+<div class="strip" aria-hidden="true"><span class="run" data-word="HOTTIES"></span></div>
+<div class="wrap">
+  <div class="top"><img src="assets/logo.jpg" alt="Exxxotica Hotties" width="114" height="34"><a class="back" href="./">&larr; Board</a></div>
+  <h1>Discord <span>alerts.</span></h1>
+  <p class="lede">Post to a Discord channel, and ping the roles you choose, every time someone checks in on Clappia. Set one up per server or channel. Nothing you type here is saved online.</p>
+
+  <section class="card">
+    <h2><span class="n">1</span> Discord webhook</h2>
+    <div class="body">
+      <label class="l" for="hook">Webhook URL</label>
+      <input id="hook" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://discord.com/api/webhooks/…">
+      <p class="help">In the Discord app: open the server &rarr; <b>Server Settings &rarr; Integrations &rarr; Webhooks &rarr; New Webhook</b>. Pick the <b>channel</b> alerts should go to, then <b>Copy Webhook URL</b> and paste it here. The webhook decides the channel; make another one for each channel or server.</p>
+      <div style="margin-top:14px">
+        <label class="l" for="thread">Forum post / thread ID <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input id="thread" type="text" inputmode="numeric" placeholder="Only if posting into a thread or forum post">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">2</span> Who gets pinged</h2>
+    <div class="body">
+      <div class="heads"><span>On</span><span>Role name (for you)</span><span>Role ID</span><span></span></div>
+      <div id="roles"></div>
+      <button class="btn ghost" id="addRole" type="button"><span>+ Add role</span></button>
+      <p class="help">Untick a role to leave it out without deleting it. To get a role's ID on iPhone: in any channel, send <code>\@RoleName</code> (with the backslash). Discord shows it as <code>&lt;@&amp;1234…&gt;</code>; the number is the ID. Or turn on <b>Settings &rarr; Advanced &rarr; Developer Mode</b>, then long-press the role in Server Settings &rarr; Roles &rarr; <b>Copy Role ID</b>.</p>
+      <div class="opts" style="margin-top:14px">
+        <label class="opt"><input type="checkbox" id="everyone"><span>Ping @everyone<small>Everyone in the channel</small></span></label>
+        <label class="opt"><input type="checkbox" id="here"><span>Ping @here<small>Only people online</small></span></label>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">3</span> Message</h2>
+    <div class="body">
+      <div class="opts">
+        <label class="opt"><input type="checkbox" id="fName" checked><span>Hottie name</span></label>
+        <label class="opt"><input type="checkbox" id="fTime" checked><span>Time</span></label>
+        <label class="opt"><input type="checkbox" id="fDate" checked><span>Date</span></label>
+        <label class="opt"><input type="checkbox" id="fMap" checked><span>Map link to where they checked in</span></label>
+      </div>
+      <div style="margin-top:14px">
+        <label class="l" for="botName">Bot name</label>
+        <input id="botName" type="text" value="Hotties Check-In">
+      </div>
+      <div style="margin-top:14px">
+        <label class="l" for="title">Alert title</label>
+        <input id="title" type="text" value="New check-in at 3XE">
+      </div>
+      <details style="margin-top:16px">
+        <summary>Advanced: Clappia field names</summary>
+        <p class="help" style="margin-top:0">These match your app's fields. Only change them if you rename fields in Clappia.</p>
+        <div class="vars">
+          <div><label class="l" for="vName">Name field</label><input id="vName" type="text" value="hottie_name"></div>
+          <div><label class="l" for="vTime">Time field</label><input id="vTime" type="text" value="time"></div>
+          <div><label class="l" for="vDate">Date field</label><input id="vDate" type="text" value="date"></div>
+          <div><label class="l" for="vPin">Location pin field</label><input id="vPin" type="text" value="check_in"></div>
+        </div>
+      </details>
+      <div style="margin-top:18px"><label class="l">Preview</label><div class="preview" id="preview"></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">4</span> Test it</h2>
+    <div class="body">
+      <p class="help" style="margin-top:0">Sends a sample alert to your channel right now (marked as a test).</p>
+      <div class="btns"><button class="btn" id="test" type="button"><span>Send test &rarr;</span></button></div>
+      <div class="status" id="status" role="status"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">5</span> Paste into Clappia</h2>
+    <div class="body">
+      <ol class="steps">
+        <li>In Clappia: <b>Design App &rarr; Workflows &rarr; New Submission Flow</b>, add a node and choose <b>REST API</b>.</li>
+        <li>Set <b>Method Type</b> to <b>POST</b> and <b>Body Type</b> to <b>JSON</b>. Leave Headers empty (or <code>{"Content-Type": "application/json"}</code>).</li>
+        <li>Copy this into <b>Server Url</b>:
+          <div class="out" style="margin-top:8px"><input id="outUrl" type="text" readonly placeholder="Paste your webhook URL in step 1"><button class="copy" data-copy="outUrl" type="button">Copy</button></div>
+        </li>
+        <li>Copy this into <b>Body</b>:
+          <textarea id="outBody" readonly style="margin-top:8px"></textarea>
+          <div class="btns" style="margin-top:8px"><button class="copy" data-copy="outBody" type="button" style="padding:10px 14px">Copy body</button></div>
+        </li>
+        <li>Check the <code>{…}</code> fields in the body turned into Clappia variables. If one didn't, delete it, type <b>@</b> in its place and pick that field from the list.</li>
+        <li>Save the workflow, then do a real check-in to confirm the alert arrives.</li>
+      </ol>
+      <p class="help">Clappia also creates a blank "System Workflow" record after each check-in. Discord rejects alerts with empty fields, so those won't post, but if you see blank alerts, add an <b>If</b> condition before this node: <b>Hottie Name is not empty</b>.</p>
+      <p class="help">Another server or channel? Make a webhook there, paste it in step 1 (pick its roles), and add a second REST API node with the new Server Url and Body.</p>
+    </div>
+  </section>
+</div>
+<div class="foot"><span>Welcome to the club</span><b>18+</b></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const SAVE = 'discord-alert-setup'; // roles + options only; the webhook URL is never stored
+  const AVATAR = new URL('assets/avatar.png', location.href).href;
+  const COLOR = 0xff3ea5;
+
+  document.querySelectorAll('.strip .run').forEach(el => {
+    const unit = `${el.dataset.word}<span class="x">&times;</span>`; el.innerHTML = unit.repeat(16) + unit.repeat(16);
+  });
+
+  // ---------- roles ----------
+  function addRole(r = { on: true, name: '', id: '' }) {
+    const row = document.createElement('div'); row.className = 'row';
+    row.innerHTML = `<input type="checkbox" aria-label="Ping this role"><input type="text" placeholder="e.g. Managers" aria-label="Role name"><input type="text" inputmode="numeric" placeholder="123456789012345678" aria-label="Role ID"><button class="x-btn" type="button" aria-label="Remove role">&times;</button>`;
+    const [on, name, id, del] = row.children;
+    on.checked = !!r.on; name.value = r.name || ''; id.value = r.id || '';
+    del.addEventListener('click', () => { row.remove(); update(); });
+    row.addEventListener('input', update);
+    $('roles').append(row);
+  }
+  const roles = () => [...$('roles').children].map(r => ({ on: r.children[0].checked, name: r.children[1].value.trim(), id: r.children[2].value.replace(/\D/g, '') }));
+
+  // ---------- build ----------
+  const v = (id) => `{${$(id).value.trim()}}`;
+  function webhookUrl() {
+    const raw = $('hook').value.trim();
+    const m = raw.match(/^https:\/\/(?:ptb\.|canary\.)?(?:discord|discordapp)\.com\/api(?:\/v\d+)?\/webhooks\/\d+\/[\w-]+/);
+    if (!m) return null;
+    const t = $('thread').value.replace(/\D/g, '');
+    return m[0].replace('discordapp.com', 'discord.com') + '?wait=true' + (t ? '&thread_id=' + t : '');
+  }
+  function payload(sample) {
+    const on = roles().filter(r => r.on && r.id);
+    const mentions = [];
+    if ($('everyone').checked) mentions.push('@everyone');
+    if ($('here').checked) mentions.push('@here');
+    on.forEach(r => mentions.push(`<@&${r.id}>`));
+    const val = (key, id) => sample ? sample[key] : v(id);
+    const fields = [];
+    if ($('fName').checked) fields.push({ name: 'Hottie', value: val('name', 'vName'), inline: true });
+    if ($('fTime').checked) fields.push({ name: 'Time', value: val('time', 'vTime'), inline: true });
+    if ($('fDate').checked) fields.push({ name: 'Date', value: val('date', 'vDate'), inline: true });
+    if ($('fMap').checked) fields.push({ name: 'Location', value: `[Open in Maps](https://maps.google.com/?q=${val('pin', 'vPin')})`, inline: false });
+    const p = {
+      username: $('botName').value.trim() || 'Hotties Check-In',
+      avatar_url: AVATAR,
+      content: (sample ? '🧪 Test alert ' : '') + mentions.join(' '),
+      allowed_mentions: { parse: [ ...($('everyone').checked || $('here').checked ? ['everyone'] : []) ], roles: on.map(r => r.id) },
+      embeds: [{ title: '✅ ' + ($('title').value.trim() || 'New check-in'), color: COLOR, fields, footer: { text: 'Exxxotica Hotties · Clappia check-in' } }]
+    };
+    if (!p.content) delete p.content;
+    return p;
+  }
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  function preview() {
+    const on = roles().filter(r => r.on && r.id);
+    const pings = [];
+    if ($('everyone').checked) pings.push('@everyone'); if ($('here').checked) pings.push('@here');
+    on.forEach(r => pings.push('@' + (r.name || 'role ' + r.id.slice(-4))));
+    const f = [];
+    if ($('fName').checked) f.push(['Hottie', 'Vamp']); if ($('fTime').checked) f.push(['Time', '10:44 PM']); if ($('fDate').checked) f.push(['Date', '10-23-2026']);
+    $('preview').innerHTML = `
+      <div class="pv-head"><div class="pv-av"></div><div><span class="pv-name">${esc($('botName').value || 'Hotties Check-In')}</span><span class="pv-bot">APP</span></div></div>
+      ${pings.length ? `<div class="pv-content">${pings.map(p => `<span class="pv-ping">${esc(p)}</span>`).join(' ')}</div>` : '<div style="height:6px"></div>'}
+      <div class="pv-embed"><div class="pv-title">✅ ${esc($('title').value || 'New check-in')}</div>
+        <div class="pv-fields">${f.map(([k, x]) => `<div class="pv-f"><b>${k}</b><span>${x}</span></div>`).join('')}
+        ${$('fMap').checked ? '<div class="pv-f full"><b>Location</b><a href="#" onclick="return false">Open in Maps</a></div>' : ''}</div>
+        <div class="pv-foot">Exxxotica Hotties · Clappia check-in</div></div>`;
+  }
+
+  function update() {
+    const url = webhookUrl();
+    $('outUrl').value = url || '';
+    $('outBody').value = JSON.stringify(payload(null), null, 2);
+    preview();
+    try {
+      localStorage.setItem(SAVE, JSON.stringify({
+        roles: roles(), everyone: $('everyone').checked, here: $('here').checked,
+        f: ['fName', 'fTime', 'fDate', 'fMap'].map(id => $(id).checked),
+        botName: $('botName').value, title: $('title').value,
+        vars: ['vName', 'vTime', 'vDate', 'vPin'].map(id => $(id).value)
+      }));
+    } catch {}
+  }
+
+  // ---------- test ----------
+  $('test').addEventListener('click', async () => {
+    const st = $('status'); st.className = 'status';
+    const url = webhookUrl();
+    if (!url) { st.className = 'status bad'; st.textContent = 'Paste a Discord webhook URL in step 1 first.'; return; }
+    const now = new Date();
+    const sample = { name: 'Test Hottie', time: now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+      date: now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '-'), pin: '40.4999,-74.3466' };
+    st.textContent = 'Sending…';
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload(sample)) });
+      if (res.ok) { st.className = 'status ok'; st.textContent = 'Sent. Check your Discord channel.'; }
+      else {
+        let msg = ''; try { msg = (await res.json()).message || ''; } catch {}
+        st.className = 'status bad';
+        st.textContent = res.status === 404 || res.status === 401 ? 'Discord says that webhook doesn’t exist. Copy the URL again.' : `Discord rejected it (${res.status}${msg ? ': ' + msg : ''}).`;
+      }
+    } catch { st.className = 'status bad'; st.textContent = 'Couldn’t reach Discord. Check your connection and try again.'; }
+  });
+
+  // ---------- copy ----------
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+    const el = $(b.dataset.copy); if (!el.value) return;
+    let ok = false;
+    try { await navigator.clipboard.writeText(el.value); ok = true; } catch {}
+    if (!ok) { el.focus(); el.select(); el.setSelectionRange(0, el.value.length); try { ok = document.execCommand('copy'); } catch {} }
+    const t = b.textContent; b.textContent = ok ? 'Copied' : 'Select & copy'; b.classList.toggle('ok', ok);
+    setTimeout(() => { b.textContent = t; b.classList.remove('ok'); }, 1600);
+  }));
+
+  // ---------- restore ----------
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(SAVE) || 'null'); } catch {}
+  if (saved) {
+    (saved.roles || []).forEach(addRole);
+    $('everyone').checked = !!saved.everyone; $('here').checked = !!saved.here;
+    (saved.f || []).forEach((c, i) => { $(['fName', 'fTime', 'fDate', 'fMap'][i]).checked = c; });
+    if (saved.botName) $('botName').value = saved.botName; if (saved.title) $('title').value = saved.title;
+    (saved.vars || []).forEach((x, i) => { if (x) $(['vName', 'vTime', 'vDate', 'vPin'][i]).value = x; });
+  }
+  if (!$('roles').children.length) addRole({ on: true, name: 'Managers', id: '' });
+  $('addRole').addEventListener('click', () => { addRole(); update(); });
+  document.querySelectorAll('input:not([readonly])').forEach(el => el.addEventListener('input', update));
+  document.querySelectorAll('input[type=checkbox]').forEach(el => el.addEventListener('change', update));
+  update();
+})();
+</script>
+</body>
+</html>
