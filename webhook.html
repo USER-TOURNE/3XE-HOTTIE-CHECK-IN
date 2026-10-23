@@ -177,8 +177,30 @@
     </div>
   </section>
 
+  <section class="card" id="free">
+    <h2><span class="n">5</span> Paste into Clappia (free plan: Slack step)</h2>
+    <div class="body">
+      <p class="help" style="margin-top:0">Clappia's <b>REST API</b> step is Premium, but its <b>Slack</b> step is free, and Discord accepts Slack-style messages when <code>/slack</code> is added to the webhook link. This posts a plain-text alert (no pink card).</p>
+      <ol class="steps" style="margin-top:12px">
+        <li>In Clappia: <b>Design App &rarr; Workflows &rarr; New Submission Flow</b>. Add an <b>If</b> step: <b>Hottie Name is not empty</b> (skips Clappia's blank system records).</li>
+        <li>Under it, add a <b>Slack</b> step. Copy this into <b>To Slack Channel</b>:
+          <div class="out" style="margin-top:8px"><input id="slackUrl" type="text" readonly placeholder="Paste your webhook URL in step 1"><button class="copy" data-copy="slackUrl" type="button">Copy</button></div>
+        </li>
+        <li>Copy this into <b>Subject</b>:
+          <div class="out" style="margin-top:8px"><input id="slackSubj" type="text" readonly><button class="copy" data-copy="slackSubj" type="button">Copy</button></div>
+        </li>
+        <li>Copy this into <b>Body</b>:
+          <textarea id="slackBody" readonly style="margin-top:8px;min-height:120px"></textarea>
+          <div class="btns" style="margin-top:8px"><button class="copy" data-copy="slackBody" type="button" style="padding:10px 14px">Copy body</button></div>
+        </li>
+        <li>Check each <code>{…}</code> turned into a Clappia variable; if not, delete it, type <b>@</b> and pick the field. Save, then do a real check-in.</li>
+      </ol>
+      <p class="help">If Clappia refuses the link because it isn't a Slack address, or the alert never arrives, tell Claude: the fallback is a free relay that watches your Google Sheet.</p>
+    </div>
+  </section>
+
   <section class="card">
-    <h2><span class="n">5</span> Paste into Clappia</h2>
+    <h2><span class="n">6</span> Paste into Clappia (Premium: REST API step)</h2>
     <div class="body">
       <ol class="steps">
         <li>In Clappia: <b>Design App &rarr; Workflows &rarr; New Submission Flow</b>, add a node and choose <b>REST API</b>.</li>
@@ -255,6 +277,21 @@
     return p;
   }
 
+  function slackBody() {
+    const ping = [];
+    if ($('everyone').checked) ping.push('@everyone');
+    if ($('here').checked) ping.push('@here');
+    roles().filter(r => r.on && r.id).forEach(r => ping.push(`<@&${r.id}>`));
+    const lines = [];
+    const who = $('fName').checked ? v('vName') : 'Someone';
+    let line = `${who} checked in`;
+    if ($('fTime').checked) line += ` at ${v('vTime')}`;
+    if ($('fDate').checked) line += ` on ${v('vDate')}`;
+    lines.push(line);
+    if ($('fMap').checked) lines.push(`Map: https://maps.google.com/?q=${v('vPin')}`);
+    if (ping.length) lines.push(ping.join(' '));
+    return lines.join('\n');
+  }
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function preview() {
     const on = roles().filter(r => r.on && r.id);
@@ -276,6 +313,10 @@
     const url = webhookUrl();
     $('outUrl').value = url || '';
     $('outBody').value = JSON.stringify(payload(null), null, 2);
+    const base = webhookUrl();
+    $('slackUrl').value = base ? base.replace('?wait=true', '/slack').replace('/slack&', '/slack?') : '';
+    $('slackSubj').value = '✅ ' + ($('title').value.trim() || 'New check-in');
+    $('slackBody').value = slackBody();
     preview();
     try {
       localStorage.setItem(SAVE, JSON.stringify({
