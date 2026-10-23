@@ -144,6 +144,14 @@
     border-top: 3px solid; border-image: linear-gradient(90deg, var(--hot), var(--violet)) 1;
   }
   #view-log iframe, #view-checkin iframe { height: calc(100vh - 200px); min-height: 520px; }
+  /* dark tint over Clappia frames: white -> near-black, hues kept */
+  .frame.tinted iframe { filter: invert(.92) hue-rotate(180deg) saturate(1.15); background: #fff; }
+  .head-r { display: inline-flex; align-items: center; gap: 12px; }
+  .theme-btn {
+    border: 1px solid var(--line); background: transparent; color: var(--muted); cursor: pointer;
+    font: 700 10px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; padding: 6px 9px;
+  }
+  .theme-btn:hover { border-color: var(--hot); color: var(--ink); }
   .grid { display: grid; gap: 18px; grid-template-columns: 1fr; }
   @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } .grid .wide { grid-column: 1 / -1; } }
   .grid iframe { height: 420px; }
@@ -287,6 +295,7 @@
     w.querySelector('iframe').dataset.noRefresh = '1';
     w.querySelector('iframe').removeAttribute('loading');
     w.querySelector('.stamp').classList.remove('stamp');
+    themeToggle(w, 'checkin');
     v.append(w);
   }
 
@@ -295,7 +304,7 @@
     wrap.className = 'frame' + (extraClass ? ' ' + extraClass : '');
     const head = document.createElement('div');
     head.className = 'frame-head';
-    head.innerHTML = '<span></span><span class="stamp"></span>';
+    head.innerHTML = '<span></span><span class="head-r"><span class="stamp"></span></span>';
     head.firstChild.textContent = title;
     const f = document.createElement('iframe');
     f.src = src; f.loading = 'lazy'; f.referrerPolicy = 'no-referrer';
@@ -305,11 +314,34 @@
     return wrap;
   }
 
+  // ---- Dark tint for Clappia frames (revert: set DARK_FRAMES = false) ----
+  // Browsers don't allow restyling another site's page, so this tints the whole
+  // frame: light becomes dark, colors keep roughly their hue. Each viewer can flip
+  // it per frame; their choice is remembered on that device.
+  const DARK_FRAMES = true;
+  function themeToggle(wrap, key) {
+    if (!DARK_FRAMES) return;
+    const pref = 'frame-theme-' + key;
+    const get = () => { try { return localStorage.getItem(pref); } catch { return null; } };
+    const set = (v) => { try { localStorage.setItem(pref, v); } catch {} };
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'theme-btn';
+    const apply = (dark) => {
+      wrap.classList.toggle('tinted', dark);
+      btn.textContent = dark ? 'Light' : 'Dark';
+      btn.setAttribute('aria-label', dark ? 'Show in light colors' : 'Show in dark colors');
+      btn.title = dark ? 'Switch this frame back to Clappia’s light colors' : 'Switch this frame to dark colors';
+    };
+    apply(get() !== 'light');
+    btn.addEventListener('click', () => { const dark = !wrap.classList.contains('tinted'); set(dark ? 'dark' : 'light'); apply(dark); });
+    wrap.querySelector('.head-r').prepend(btn);
+  }
+
   function render(cfg) {
     $('title').textContent = cfg.title || 'Check-In Board';
     document.title = $('title').textContent + ' · Hotties';
     const log = $('view-log'); log.innerHTML = '';
-    if (cfg.log) log.append(frame(cfg.log.title || 'Check-in log', cfg.log.src));
+    if (cfg.log) { const lw = frame(cfg.log.title || 'Check-in log', cfg.log.src); themeToggle(lw, 'log'); log.append(lw); }
     else log.innerHTML = '<div class="frame empty">No check-in log has been added yet.</div>';
 
     const grid = $('charts'); grid.innerHTML = '';
