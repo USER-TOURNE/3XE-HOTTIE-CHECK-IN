@@ -186,7 +186,11 @@
   .chart .bar-n { font: 700 11px var(--mono); fill: var(--ink); text-anchor: middle; }
   .chart .bar-l { font: 10px var(--mono); fill: var(--muted); text-anchor: middle; }
   #a-map { height: 380px; z-index: 0; background: var(--bg-2); }
-  .leaflet-container { font-family: var(--body); }
+  .leaflet-container { font-family: var(--body); background: #0d0b0d; }
+  /* darken OpenStreetMap's light tiles: invert, keep hues, then tint toward the brand */
+  #a-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.6); }
+  .leaflet-control-attribution { background: rgba(11, 7, 9, .75) !important; color: var(--muted) !important; }
+  .leaflet-control-attribution a { color: var(--hot) !important; }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel-2); color: var(--ink); border: 1px solid var(--hot); border-radius: 0; }
   .leaflet-popup-content b { color: var(--hot); }
   .hbar { display: grid; grid-template-columns: minmax(70px, 170px) 1fr 32px; gap: 12px; align-items: center; padding: 6px 0; font-size: 14px; font-weight: 500; }

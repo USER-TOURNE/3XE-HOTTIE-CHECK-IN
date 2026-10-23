@@ -147,7 +147,9 @@ window.Analytics = (() => {
     try { await loadLeaflet(); } catch { el.outerHTML = '<div class="a-empty">The map couldn’t load.</div>'; return; }
     if (map) { map.remove(); map = null; }
     map = L.map(el, { scrollWheelZoom: false, attributionControl: true });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
+    // OpenStreetMap tiles (no key needed), darkened with CSS to fit the theme.
+    // OSM requires a referrer, so tiles send one even though the page itself doesn't.
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, referrerPolicy: 'strict-origin-when-cross-origin', attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map);
     markerLayer = L.featureGroup().addTo(map);
     const accent = getComputedStyle(document.documentElement).getPropertyValue('--hot').trim() || '#ff3ea5';
     pts.forEach((r, i) => L.circleMarker([r.lat, r.lng], {
