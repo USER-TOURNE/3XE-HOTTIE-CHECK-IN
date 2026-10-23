@@ -108,7 +108,7 @@
 <div class="wrap">
   <div class="top"><img src="assets/logo.jpg" alt="Exxxotica Hotties" width="114" height="34"><a class="back" href="./">&larr; Board</a></div>
   <h1>Discord <span>alerts.</span></h1>
-  <p class="lede">Post to a Discord channel, and ping the roles you choose, every time someone checks in on Clappia. Set one up per server or channel. Nothing you type here is saved online.</p>
+  <p class="lede">Post to a Discord channel, and ping the roles you choose, every time someone checks in on Clappia. Set one up per server or channel. Your settings are saved only on this device, never online.</p>
 
   <section class="card">
     <h2><span class="n">1</span> Discord webhook</h2>
@@ -120,6 +120,7 @@
         <label class="l" for="thread">Forum post / thread ID <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
         <input id="thread" type="text" inputmode="numeric" placeholder="Only if posting into a thread or forum post">
       </div>
+      <label class="opt" style="margin-top:14px"><input type="checkbox" id="keepHook" checked><span>Remember this webhook on this device<small>Saved only in this browser. Untick to forget it, e.g. on a shared phone.</small></span></label>
     </div>
   </section>
 
@@ -225,7 +226,8 @@
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
-  const SAVE = 'discord-alert-setup'; // roles + options only; the webhook URL is never stored
+  const SAVE = 'discord-alert-setup';      // roles + message options
+  const HOOK = 'discord-alert-webhook';    // webhook URL + thread, only when "Remember" is ticked
   const AVATAR = new URL('assets/avatar.png', location.href).href;
   const COLOR = 0xff3ea5;
 
@@ -322,9 +324,13 @@
       localStorage.setItem(SAVE, JSON.stringify({
         roles: roles(), everyone: $('everyone').checked, here: $('here').checked,
         f: ['fName', 'fTime', 'fDate', 'fMap'].map(id => $(id).checked),
-        botName: $('botName').value, title: $('title').value,
+        botName: $('botName').value, title: $('title').value, keepHook: $('keepHook').checked,
         vars: ['vName', 'vTime', 'vDate', 'vPin'].map(id => $(id).value)
       }));
+    } catch {}
+    try {
+      if ($('keepHook').checked) localStorage.setItem(HOOK, JSON.stringify({ hook: $('hook').value.trim(), thread: $('thread').value.trim() }));
+      else localStorage.removeItem(HOOK);
     } catch {}
   }
 
@@ -367,6 +373,11 @@
     if (saved.botName) $('botName').value = saved.botName; if (saved.title) $('title').value = saved.title;
     (saved.vars || []).forEach((x, i) => { if (x) $(['vName', 'vTime', 'vDate', 'vPin'][i]).value = x; });
   }
+  try {
+    const h = JSON.parse(localStorage.getItem(HOOK) || 'null');
+    if (h) { $('hook').value = h.hook || ''; $('thread').value = h.thread || ''; $('keepHook').checked = true; }
+    else if (saved) $('keepHook').checked = saved.keepHook !== false;
+  } catch {}
   if (!$('roles').children.length) addRole({ on: true, name: 'Managers', id: '' });
   $('addRole').addEventListener('click', () => { addRole(); update(); });
   document.querySelectorAll('input:not([readonly])').forEach(el => el.addEventListener('input', update));
