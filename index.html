@@ -200,6 +200,11 @@
     scrollbar-width: thin; scrollbar-color: var(--hot) transparent;
     -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent); padding-bottom: 20px; }
   .hbars::-webkit-scrollbar { width: 4px; } .hbars::-webkit-scrollbar-thumb { background: var(--hot); }
+  .dupes { margin-top: 14px; padding: 12px 14px; border: 1px dashed var(--hot); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+  .dupes b { width: 100%; font: 700 10px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--hot); }
+  .dupes i { color: var(--muted); font-style: normal; }
+  .fix-hint { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+  .fix-hint b { color: var(--ink); }
   .hbar { display: grid; grid-template-columns: minmax(70px, 170px) 1fr 32px; gap: 12px; align-items: center; padding: 6px 0; font-size: 14px; font-weight: 500; }
   .hbar-l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .hbar-l small { display: block; font: 10px/1.4 var(--mono); letter-spacing: .06em; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
@@ -261,8 +266,8 @@
   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3ea5"/><stop offset="1" stop-color="#7b45db"/></linearGradient>
 </defs></svg>
 
-<script src="payload.js?v=cb619d7e"></script>
-<script src="analytics.js?v=cb619d7e"></script>
+<script src="payload.js?v=fc3b37d3"></script>
+<script src="analytics.js?v=fc3b37d3"></script>
 <script>
 (() => {
   const KEY = 'checkin-board-key';
@@ -358,7 +363,7 @@
 
     const grid = $('charts'); grid.innerHTML = '';
     (cfg.charts || []).forEach((c) => grid.append(frame(c.title || 'Chart', c.src, c.wide ? 'wide' : '')));
-    if (cfg.sheet && window.Analytics) window.Analytics.start(cfg.sheet.csv, grid);
+    if (cfg.sheet && window.Analytics) window.Analytics.start(cfg.sheet.csv, grid, cfg.sheet.aliases);
     else if (!(cfg.charts || []).length) grid.innerHTML = '<div class="frame empty wide">Analytics are coming soon.</div>';
 
     checkinCfg = cfg.app || null;

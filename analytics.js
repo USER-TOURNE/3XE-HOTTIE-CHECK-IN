@@ -1,7 +1,7 @@
 // Live analytics built from the Clappia -> Google Sheets sync (published CSV).
 // The CSV link itself arrives encrypted in payload.js; nothing secret lives here.
 window.Analytics = (() => {
-  let url = null, root = null, map = null, markerLayer = null, lastRows = null, lastSig = null, lastDay = null, leafletPromise = null;
+  let url = null, aliasUrl = null, aliasMap = new Map(), root = null, map = null, markerLayer = null, lastRows = null, lastSig = null, lastDay = null, leafletPromise = null;
 
   // ---------- CSV ----------
   function parseCSV(text) {
@@ -54,6 +54,54 @@ window.Analytics = (() => {
   const fmtTime = (d) => d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const fmtDay = (d) => d.toLocaleDateString([], { month: 'short', day: 'numeric' });
   const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const normName = (s) => String(s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+
+  // "Name fixes": a 2-column sheet tab, Wrong name | Correct name, edited by managers.
+  async function loadAliases() {
+    if (!aliasUrl) return;
+    try {
+      const sep = aliasUrl.includes('?') ? '&' : '?';
+      const res = await fetch(aliasUrl + sep + '_=' + Date.now(), { cache: 'no-store', referrerPolicy: 'no-referrer' });
+      if (!res.ok) return;
+      const m = new Map();
+      parseCSV(await res.text()).forEach(([wrong, right]) => {
+        const w = normName(wrong), r = String(right || '').trim().replace(/\s+/g, ' ');
+        if (!w || !r || w === 'wrong name') return; // skip header and half-filled rows
+        m.set(w, r);
+      });
+      aliasMap = m;
+    } catch { /* keep the last good list */ }
+  }
+  function applyAliases(recs) {
+    recs.forEach(r => {
+      let n = r.name;
+      for (let i = 0; i < 5; i++) { const c = aliasMap.get(normName(n)); if (!c || normName(c) === normName(n)) break; n = c; }
+      r.name = n;
+    });
+    return recs;
+  }
+
+  // Names that look like typos of each other (helps spot what to add to Name fixes)
+  function lev(a, b) {
+    if (Math.abs(a.length - b.length) > 2) return 3;
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[a.length][b.length];
+  }
+  function lookalikes(names) {
+    const out = [];
+    const squash = (s) => normName(s).replace(/[^a-z0-9]/g, '');
+    for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
+      const a = squash(names[i]), b = squash(names[j]);
+      if (!a || !b) continue;
+      const close = a === b || (Math.min(a.length, b.length) >= 4 && lev(a, b) <= (Math.max(a.length, b.length) >= 8 ? 2 : 1));
+      if (close) out.push([names[i], names[j]]);
+    }
+    return out.slice(0, 8);
+  }
+
   function ago(d) {
     const s = Math.max(0, (Date.now() - d) / 1000);
     if (s < 60) return 'just now';
@@ -119,13 +167,17 @@ window.Analytics = (() => {
     const perPerson = people.length ? '<div class="hbars">' + people.map(p =>
       `<div class="hbar"><span class="hbar-l">${esc(p.name)}<small>Last in ${fmtDay(p.last)} · ${fmtTime(p.last)}</small></span><span class="hbar-t"><span class="hbar-f" style="width:${(p.count / pmax * 100).toFixed(1)}%"></span></span><span class="hbar-n">${p.count}</span></div>`).join('') + '</div>'
       : `<div class="a-empty">No data yet.</div>`;
+    const dupes = lookalikes(people.map(p => p.name));
+    const fixHint = (dupes.length
+      ? `<div class="dupes"><b>Possible duplicates</b>${dupes.map(([x, y]) => `<span>${esc(x)} <i>&harr;</i> ${esc(y)}</span>`).join('')}</div>` : '')
+      + (aliasUrl ? `<p class="fix-hint">Same person under two spellings? Add the wrong spelling and the correct name to the <b>Name fixes</b> tab of the Google Sheet. The counts merge within a few minutes.</p>` : '');
 
     root.innerHTML =
       card('Summary', kpis, 'wide') +
       card("Who's in today", todayList) +
       card('Check-ins per day (last 14 days)', byDay) +
       card('Where they checked in', '<div id="a-map"></div>', 'wide') +
-      card(`Check-ins per person · latest first · ${people.length}`, perPerson, 'wide');
+      card(`Check-ins per person · latest first · ${people.length}`, perPerson + fixHint, 'wide');
 
     drawMap(recs);
     document.querySelectorAll('.stamp').forEach(s => s.textContent = 'Updated ' + fmtTime(new Date()));
@@ -172,7 +224,8 @@ window.Analytics = (() => {
       if (!res.ok) throw new Error(res.status);
       const rows = parseCSV(await res.text());
       if (rows.length < 1) throw new Error('empty');
-      const recs = toRecords(rows);
+      await loadAliases();
+      const recs = applyAliases(toRecords(rows));
       const sig = JSON.stringify(recs);
       if (lastRows && sig === lastSig && startOfDay(new Date()).getTime() === lastDay) {
         // Nothing new: keep the map as-is, just refresh the "updated" stamps and "x min ago"
@@ -190,7 +243,7 @@ window.Analytics = (() => {
   }
 
   return {
-    start(csvUrl, el) { url = csvUrl; root = el; root.innerHTML = '<div class="frame empty wide">Loading analytics…</div>'; load(); },
+    start(csvUrl, el, aliasesUrl) { url = csvUrl; aliasUrl = aliasesUrl || null; root = el; root.innerHTML = '<div class="frame empty wide">Loading analytics…</div>'; load(); },
     refresh() { load(); },
     _test: { parseCSV, toRecords, render: (recs, el) => { root = el; render(recs); } }
   };

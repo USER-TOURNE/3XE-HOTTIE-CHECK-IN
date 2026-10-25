@@ -41,7 +41,7 @@ const publicCfg = {
   refreshSeconds: cfg.refreshSeconds ?? 60,
   log: cfg.log ? { title: cfg.log.title || 'Check-in log', src: srcOf(cfg.log.embed) } : null,
   charts: (cfg.charts || []).map(c => ({ title: c.title || 'Chart', src: srcOf(c.embed), wide: !!c.wide })),
-  sheet: cfg.sheet ? { csv: srcOf(cfg.sheet.csv) } : null,
+  sheet: cfg.sheet ? { csv: srcOf(cfg.sheet.csv), aliases: cfg.sheet.aliases ? srcOf(cfg.sheet.aliases) : null } : null,
   app: cfg.app ? { title: cfg.app.title || 'Check in', src: srcOf(cfg.app.embed) } : null,
 };
 
