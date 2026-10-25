@@ -203,6 +203,7 @@
   .dupes { margin-top: 14px; padding: 12px 14px; border: 1px dashed var(--hot); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
   .dupes b { width: 100%; font: 700 10px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--hot); }
   .dupes i { color: var(--muted); font-style: normal; }
+  .tag-added { font: 700 9px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); font-style: normal; border: 1px solid rgba(0,255,255,.4); padding: 1px 4px; margin-left: 4px; vertical-align: 2px; }
   .fix-hint { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
   .fix-hint b { color: var(--ink); }
   .hbar { display: grid; grid-template-columns: minmax(70px, 170px) 1fr 32px; gap: 12px; align-items: center; padding: 6px 0; font-size: 14px; font-weight: 500; }
@@ -266,8 +267,8 @@
   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3ea5"/><stop offset="1" stop-color="#7b45db"/></linearGradient>
 </defs></svg>
 
-<script src="payload.js?v=98524fac"></script>
-<script src="analytics.js?v=98524fac"></script>
+<script src="payload.js?v=e4fb537c"></script>
+<script src="analytics.js?v=e4fb537c"></script>
 <script>
 (() => {
   const KEY = 'checkin-board-key';
@@ -363,7 +364,7 @@
 
     const grid = $('charts'); grid.innerHTML = '';
     (cfg.charts || []).forEach((c) => grid.append(frame(c.title || 'Chart', c.src, c.wide ? 'wide' : '')));
-    if (cfg.sheet && window.Analytics) window.Analytics.start(cfg.sheet.csv, grid, cfg.sheet.aliases);
+    if (cfg.sheet && window.Analytics) window.Analytics.start(cfg.sheet.csv, grid, cfg.sheet.aliases, cfg.sheet.manual);
     else if (!(cfg.charts || []).length) grid.innerHTML = '<div class="frame empty wide">Analytics are coming soon.</div>';
 
     checkinCfg = cfg.app || null;

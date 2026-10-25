@@ -1,7 +1,7 @@
 // Live analytics built from the Clappia -> Google Sheets sync (published CSV).
 // The CSV link itself arrives encrypted in payload.js; nothing secret lives here.
 window.Analytics = (() => {
-  let url = null, aliasUrl = null, aliasMap = new Map(), root = null, map = null, markerLayer = null, lastRows = null, lastSig = null, lastDay = null, leafletPromise = null;
+  let url = null, aliasUrl = null, manualUrl = null, manualRecs = [], aliasMap = new Map(), root = null, map = null, markerLayer = null, lastRows = null, lastSig = null, lastDay = null, leafletPromise = null;
 
   // ---------- CSV ----------
   function parseCSV(text) {
@@ -72,6 +72,23 @@ window.Analytics = (() => {
       aliasMap = m;
     } catch { /* keep the last good list */ }
   }
+  // "Manual check-ins": Name | Date | Time | Note, for check-ins people forgot to submit.
+  async function loadManual() {
+    if (!manualUrl) return;
+    try {
+      const sep = manualUrl.includes('?') ? '&' : '?';
+      const res = await fetch(manualUrl + sep + '_=' + Date.now(), { cache: 'no-store', referrerPolicy: 'no-referrer' });
+      if (!res.ok) return;
+      const out = [];
+      parseCSV(await res.text()).forEach(([name, date, time]) => {
+        const n = String(name || '').trim();
+        if (!n || n.toLowerCase() === 'name') return;
+        const at = parseStamp(`${String(date || '').trim()} ${String(time || '12:00 PM').trim() || '12:00 PM'}`);
+        if (at) out.push({ name: n, at, lat: null, lng: null, manual: true });
+      });
+      manualRecs = out;
+    } catch { /* keep the last good list */ }
+  }
   function applyAliases(recs) {
     recs.forEach(r => {
       let n = r.name;
@@ -134,7 +151,7 @@ window.Analytics = (() => {
 
     // Today list
     const todayList = todayRecs.length
-      ? `<ul class="list">${todayRecs.map(r => `<li><span>${esc(r.name)}</span><span class="muted">${fmtTime(r.at)}</span></li>`).join('')}</ul>`
+      ? `<ul class="list">${todayRecs.map(r => `<li><span>${esc(r.name)}${r.manual ? ' <em class="tag-added">added</em>' : ''}</span><span class="muted">${fmtTime(r.at)}</span></li>`).join('')}</ul>`
       : `<div class="a-empty">Nobody has checked in yet today.</div>`;
 
     // By day, last 14 days
@@ -170,7 +187,7 @@ window.Analytics = (() => {
     const dupes = lookalikes(people.map(p => p.name));
     const fixHint = (dupes.length
       ? `<div class="dupes"><b>Possible duplicates</b>${dupes.map(([x, y]) => `<span>${esc(x)} <i>&harr;</i> ${esc(y)}</span>`).join('')}</div>` : '')
-      + (aliasUrl ? `<p class="fix-hint">Same person under two spellings? Add the wrong spelling and the correct name to the <b>Name fixes</b> tab of the Google Sheet. The counts merge within a few minutes.</p>` : '');
+      + (aliasUrl ? `<p class="fix-hint">Same person under two spellings? Add the wrong spelling and the correct name to the <b>Name fixes</b> tab of the Google Sheet. Someone forgot to check in? Add them to the <b>Manual check-ins</b> tab. Changes show within a few minutes.</p>` : '');
 
     root.innerHTML =
       card('Summary', kpis, 'wide') +
@@ -224,8 +241,8 @@ window.Analytics = (() => {
       if (!res.ok) throw new Error(res.status);
       const rows = parseCSV(await res.text());
       if (rows.length < 1) throw new Error('empty');
-      await loadAliases();
-      const recs = applyAliases(toRecords(rows));
+      await Promise.all([loadAliases(), loadManual()]);
+      const recs = applyAliases([...toRecords(rows), ...manualRecs.map(r => ({ ...r }))]).sort((x, y) => y.at - x.at);
       const sig = JSON.stringify(recs);
       if (lastRows && sig === lastSig && startOfDay(new Date()).getTime() === lastDay) {
         // Nothing new: keep the map as-is, just refresh the "updated" stamps and "x min ago"
@@ -243,7 +260,7 @@ window.Analytics = (() => {
   }
 
   return {
-    start(csvUrl, el, aliasesUrl) { url = csvUrl; aliasUrl = aliasesUrl || null; root = el; root.innerHTML = '<div class="frame empty wide">Loading analytics…</div>'; load(); },
+    start(csvUrl, el, aliasesUrl, manualCsvUrl) { url = csvUrl; aliasUrl = aliasesUrl || null; manualUrl = manualCsvUrl || null; root = el; root.innerHTML = '<div class="frame empty wide">Loading analytics…</div>'; load(); },
     refresh() { load(); },
     _test: { parseCSV, toRecords, render: (recs, el) => { root = el; render(recs); } }
   };
