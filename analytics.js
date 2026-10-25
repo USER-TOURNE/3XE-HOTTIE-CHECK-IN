@@ -109,10 +109,10 @@ window.Analytics = (() => {
     // Per person (all time, top 10)
     const tally = {};
     recs.forEach(r => { const k = r.name; tally[k] = (tally[k] || 0) + 1; });
-    const people = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const people = Object.entries(tally).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
     const pmax = Math.max(1, ...people.map(p => p[1]));
-    const perPerson = people.length ? people.map(([n, c]) =>
-      `<div class="hbar"><span class="hbar-l">${esc(n)}</span><span class="hbar-t"><span class="hbar-f" style="width:${(c / pmax * 100).toFixed(1)}%"></span></span><span class="hbar-n">${c}</span></div>`).join('')
+    const perPerson = people.length ? '<div class="hbars">' + people.map(([n, c]) =>
+      `<div class="hbar"><span class="hbar-l">${esc(n)}</span><span class="hbar-t"><span class="hbar-f" style="width:${(c / pmax * 100).toFixed(1)}%"></span></span><span class="hbar-n">${c}</span></div>`).join('') + '</div>'
       : `<div class="a-empty">No data yet.</div>`;
 
     root.innerHTML =
@@ -120,7 +120,7 @@ window.Analytics = (() => {
       card("Who's in today", todayList) +
       card('Check-ins per day (last 14 days)', byDay) +
       card('Where they checked in', '<div id="a-map"></div>', 'wide') +
-      card('Check-ins per person (all time)', perPerson, 'wide');
+      card(`Check-ins per person (all time) · ${people.length}`, perPerson, 'wide');
 
     drawMap(recs);
     document.querySelectorAll('.stamp').forEach(s => s.textContent = 'Updated ' + fmtTime(new Date()));

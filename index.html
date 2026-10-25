@@ -196,6 +196,10 @@
   .leaflet-control-attribution a { color: var(--hot) !important; }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel-2); color: var(--ink); border: 1px solid var(--hot); border-radius: 0; }
   .leaflet-popup-content b { color: var(--hot); }
+  .hbars { max-height: 440px; overflow-y: auto; overscroll-behavior: contain; padding-right: 6px; margin-right: -6px;
+    scrollbar-width: thin; scrollbar-color: var(--hot) transparent;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent); padding-bottom: 20px; }
+  .hbars::-webkit-scrollbar { width: 4px; } .hbars::-webkit-scrollbar-thumb { background: var(--hot); }
   .hbar { display: grid; grid-template-columns: minmax(70px, 170px) 1fr 32px; gap: 12px; align-items: center; padding: 6px 0; font-size: 14px; font-weight: 500; }
   .hbar-l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .hbar-t { height: 10px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
@@ -256,8 +260,8 @@
   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3ea5"/><stop offset="1" stop-color="#7b45db"/></linearGradient>
 </defs></svg>
 
-<script src="payload.js?v=32279ca5"></script>
-<script src="analytics.js?v=32279ca5"></script>
+<script src="payload.js?v=2bedac8d"></script>
+<script src="analytics.js?v=2bedac8d"></script>
 <script>
 (() => {
   const KEY = 'checkin-board-key';
