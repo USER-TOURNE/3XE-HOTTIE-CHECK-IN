@@ -106,13 +106,18 @@ window.Analytics = (() => {
     }).join('');
     const byDay = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Check-ins per day, last 14 days">${bars}</svg>`;
 
-    // Per person (all time, top 10)
-    const tally = {};
-    recs.forEach(r => { const k = r.name; tally[k] = (tally[k] || 0) + 1; });
-    const people = Object.entries(tally).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-    const pmax = Math.max(1, ...people.map(p => p[1]));
-    const perPerson = people.length ? '<div class="hbars">' + people.map(([n, c]) =>
-      `<div class="hbar"><span class="hbar-l">${esc(n)}</span><span class="hbar-t"><span class="hbar-f" style="width:${(c / pmax * 100).toFixed(1)}%"></span></span><span class="hbar-n">${c}</span></div>`).join('') + '</div>'
+    // One row per person, most recent check-in first. Names are matched ignoring
+    // case and extra spaces, and shown with their latest spelling.
+    const byPerson = new Map();
+    recs.forEach(r => { // recs is newest-first
+      const k = r.name.trim().replace(/\s+/g, ' ').toLowerCase();
+      const p = byPerson.get(k);
+      if (p) p.count++; else byPerson.set(k, { name: r.name.trim(), last: r.at, count: 1 });
+    });
+    const people = [...byPerson.values()]; // already in last-check-in order
+    const pmax = Math.max(1, ...people.map(p => p.count));
+    const perPerson = people.length ? '<div class="hbars">' + people.map(p =>
+      `<div class="hbar"><span class="hbar-l">${esc(p.name)}<small>Last in ${fmtDay(p.last)} · ${fmtTime(p.last)}</small></span><span class="hbar-t"><span class="hbar-f" style="width:${(p.count / pmax * 100).toFixed(1)}%"></span></span><span class="hbar-n">${p.count}</span></div>`).join('') + '</div>'
       : `<div class="a-empty">No data yet.</div>`;
 
     root.innerHTML =
@@ -120,7 +125,7 @@ window.Analytics = (() => {
       card("Who's in today", todayList) +
       card('Check-ins per day (last 14 days)', byDay) +
       card('Where they checked in', '<div id="a-map"></div>', 'wide') +
-      card(`Check-ins per person (all time) · ${people.length}`, perPerson, 'wide');
+      card(`Check-ins per person · latest first · ${people.length}`, perPerson, 'wide');
 
     drawMap(recs);
     document.querySelectorAll('.stamp').forEach(s => s.textContent = 'Updated ' + fmtTime(new Date()));
